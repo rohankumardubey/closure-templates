@@ -21,6 +21,7 @@
 goog.module('soy.map');
 goog.module.declareLegacyNamespace();
 
+const {Map: JspbMap} = goog.requireType('jspb.map');
 const {Message} = goog.require('jspb');
 const {assertString} = goog.require('goog.asserts');
 const {shuffle} = goog.require('goog.array');
@@ -56,15 +57,6 @@ class SoyMap {
   get(k) {}
 
   /**
-   * Set method is required for the runtime method that copies the content of a
-   * ES6 map to jspb map.
-   * @param {K} k
-   * @param {V} v
-   * @return {!SoyMap<K, V>}
-   */
-  set(k, v) {}
-
-  /**
    * @return {!IteratorIterable<K>} An iterator that contains the keys for each
    *     element in this map.
    */
@@ -90,6 +82,7 @@ class SoyMap {
    */
   entries() {}
 }
+
 
 /**
  * Converts an ES6 Map or jspb.Map into an equivalent legacy object map.
@@ -131,7 +124,7 @@ function $$getMapKeys(map) {
  * generate setters for map fields. To construct a proto map field, we use this
  * help method to save the content of map literal to proto.
  * @param {T} proto
- * @param {!SoyMap<K, V>} jspbMap
+ * @param {!JspbMap<K, V>} jspbMap
  * @param {!SoyMap<K, V>} map
  * @return {T}
  * @template K, V, T
