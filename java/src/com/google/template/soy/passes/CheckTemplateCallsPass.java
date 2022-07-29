@@ -247,7 +247,6 @@ public final class CheckTemplateCallsPass implements CompilerFileSetPass {
           "boq.dasheradminconsoleui.appshealth.grid.templates.uptimeGrid",
           "boq.geomerchantprestoadslandingsharedv2.common.url.templates.buildUrlImpl",
           "boq.search.boq.chrome.searchboxweb.desktop.clientadapter.templates.outsideFormOverlays",
-          "boq.searchconsole.verification.templates.dnsCname",
           "boq.shopping.property.ui.components.componentregistry.classes.templates.type",
           "boq.travel.frontend.ui.body.templates.forPullingInBaseGss",
           "boq.visualfrontendviewer.imagecard.templates.sizing",
