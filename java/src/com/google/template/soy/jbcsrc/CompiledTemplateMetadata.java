@@ -42,6 +42,13 @@ import org.objectweb.asm.commons.Method;
  */
 @AutoValue
 abstract class CompiledTemplateMetadata {
+
+  /**
+   * For modifiable templates, this is appended to the default implementation and the associated
+   * template method,
+   */
+  public static final String DEFAULT_IMPL_JBC_CLASS_SUFFIX = "__modifiable_default_impl__";
+
   /**
    * The {@link Method} signature of the {@link
    * CompiledTemplate#render(SoyRecord,SoyRecord,AdvisingAppendable, RenderContext)} method.
@@ -103,19 +110,39 @@ abstract class CompiledTemplateMetadata {
             // only basic/element templates are supported for now.
             // deltemplates require the object style to support the relatively weak type checking we
             // perform on them.
-            && templateType.getTemplateKind() != TemplateType.TemplateKind.DELTEMPLATE;
+            && templateType.getTemplateKind() != TemplateType.TemplateKind.DELTEMPLATE
+            && !templateType.isModifiable()
+            && !templateType.isModifying();
     String methodName = Names.renderMethodNameFromSoyTemplateName(templateName);
     return new AutoValue_CompiledTemplateMetadata(
-        MethodRef.createStaticMethod(type, createRenderMethod(methodName)).asNonNullable(),
+        MethodRef.createStaticMethod(
+                type,
+                createRenderMethod(
+                    methodName
+                        + (templateType.isModifiable() ? DEFAULT_IMPL_JBC_CLASS_SUFFIX : "")))
+            .asNonNullable(),
         Optional.ofNullable(
             hasPositionalSignature
                 ? MethodRef.createStaticMethod(
                         type, createPositionalRenderMethod(methodName, templateType))
                     .asNonNullable()
                 : null),
+        Optional.ofNullable(
+            templateType.isModifiable()
+                ? MethodRef.createStaticMethod(type, createRenderMethod(methodName))
+                    .asCheap()
+                    .asNonNullable()
+                : null),
         MethodRef.createStaticMethod(type, createTemplateMethod(methodName))
             .asCheap()
             .asNonNullable(),
+        Optional.ofNullable(
+            templateType.isModifiable()
+                ? MethodRef.createStaticMethod(
+                        type, createTemplateMethod(methodName + DEFAULT_IMPL_JBC_CLASS_SUFFIX))
+                    .asCheap()
+                    .asNonNullable()
+                : null),
         templateType,
         type);
   }
@@ -132,8 +159,16 @@ abstract class CompiledTemplateMetadata {
    */
   abstract Optional<MethodRef> positionalRenderMethod();
 
-  /** The {@code static CompiledTemplate template()} method. */
+  abstract Optional<MethodRef> modifiableSelectMethod();
+
+  /**
+   * The main {@code static CompiledTemplate template()} method. For modifiable templates, this will
+   * point to the implementation selection shim.
+   */
   abstract MethodRef templateMethod();
+
+  /** For modifiable templates, will point to the default implementation method. */
+  abstract Optional<MethodRef> defaultModTemplateMethod();
 
   boolean hasPositionalSignature() {
     return positionalRenderMethod().isPresent();
